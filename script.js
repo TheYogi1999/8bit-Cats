@@ -49,12 +49,12 @@ function createCat(catName, filter, left, top) {
 
     const newCatName = document.createElement('div');
     newCatName.classList.add('cat-name');
-    newCatName.textContent = catName;
+    newCatName.textContent = catName || `Cat ${++catCounter}`;  // Default name
 
     const newCat = document.createElement('div');
     newCat.classList.add('cat');
     newCat.draggable = true;
-    newCat.setAttribute('data-name', catName);
+    newCat.setAttribute('data-name', newCatName.textContent);
 
     // Apply the given filter (hue and saturation)
     if (filter) {
@@ -84,9 +84,7 @@ function createCat(catName, filter, left, top) {
 
 // Add a new cat when the "Add Cat" button is clicked
 addCatButton.addEventListener('click', () => {
-    const catName = document.getElementById('cat-name').value || `Cat ${++catCounter}`;
-    createCat(catName);
-    document.getElementById('cat-name').value = '';  // Clear input
+    createCat();
 });
 
 // Drag and drop functionality
