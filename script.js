@@ -8,14 +8,41 @@ const petCatButton = document.getElementById('pet-cat');
 const renameCatButton = document.getElementById('rename-cat');
 const removeCatButton = document.getElementById('remove-cat');
 
-// Function to create and add a cat to the game area
-addCatButton.addEventListener('click', () => {
-    const catName = document.getElementById('cat-name').value || `Cat ${++catCounter}`;
+// Function to save cats data to localStorage
+function saveCatsToLocalStorage() {
+    const cats = [];
+    document.querySelectorAll('.cat-wrapper').forEach((catWrapper) => {
+        const catElement = catWrapper.querySelector('.cat');
+        const catName = catWrapper.querySelector('.cat-name').textContent;
+        const filter = catElement.style.filter; // Get hue and saturation
+        cats.push({
+            name: catName,
+            filter: filter,
+            position: {
+                left: catWrapper.style.left,
+                top: catWrapper.style.top,
+            }
+        });
+    });
+    localStorage.setItem('cats', JSON.stringify(cats));
+}
 
+// Function to load cats data from localStorage
+function loadCatsFromLocalStorage() {
+    const savedCats = JSON.parse(localStorage.getItem('cats'));
+    if (savedCats) {
+        savedCats.forEach((catData) => {
+            createCat(catData.name, catData.filter, catData.position.left, catData.position.top);
+        });
+    }
+}
+
+// Function to create and add a cat to the game area
+function createCat(catName, filter, left, top) {
     const newCatWrapper = document.createElement('div');
     newCatWrapper.classList.add('cat-wrapper');
-    newCatWrapper.style.left = `${Math.random() * (catContainer.offsetWidth - 50)}px`;
-    newCatWrapper.style.top = `${Math.random() * (catContainer.offsetHeight - 50)}px`;
+    newCatWrapper.style.left = left || `${Math.random() * (catContainer.offsetWidth - 50)}px`;
+    newCatWrapper.style.top = top || `${Math.random() * (catContainer.offsetHeight - 50)}px`;
 
     const newCatName = document.createElement('div');
     newCatName.classList.add('cat-name');
@@ -26,10 +53,15 @@ addCatButton.addEventListener('click', () => {
     newCat.draggable = true;
     newCat.setAttribute('data-name', catName);
 
-    // Apply random hue and saturation to the cat using CSS filter
-    const randomHue = Math.random() * 360;
-    const randomSaturation = Math.random() * 2 + 0.5;
-    newCat.style.filter = `hue-rotate(${randomHue}deg) saturate(${randomSaturation})`;
+    // Apply the given filter (hue and saturation)
+    if (filter) {
+        newCat.style.filter = filter;
+    } else {
+        // Generate random hue and saturation if not provided
+        const randomHue = Math.random() * 360;
+        const randomSaturation = Math.random() * 2 + 0.5;
+        newCat.style.filter = `hue-rotate(${randomHue}deg) saturate(${randomSaturation})`;
+    }
 
     // Add event listeners
     newCat.addEventListener('dragstart', dragStart);
@@ -40,10 +72,18 @@ addCatButton.addEventListener('click', () => {
     newCatWrapper.appendChild(newCat);
     catContainer.appendChild(newCatWrapper);
 
-    document.getElementById('cat-name').value = '';  // Clear input
+    // Save to localStorage
+    saveCatsToLocalStorage();
 
     // Start random movement
     moveSmoothly(newCatWrapper, newCat);
+}
+
+// Add a new cat when the "Add Cat" button is clicked
+addCatButton.addEventListener('click', () => {
+    const catName = document.getElementById('cat-name').value || `Cat ${++catCounter}`;
+    createCat(catName);
+    document.getElementById('cat-name').value = '';  // Clear input
 });
 
 // Drag and drop functionality
@@ -63,6 +103,9 @@ catContainer.addEventListener('drop', (e) => {
     const y = e.clientY - rect.top;
     selectedCat.parentElement.style.left = `${x}px`;
     selectedCat.parentElement.style.top = `${y}px`;
+
+    // Save new position to localStorage
+    saveCatsToLocalStorage();
 });
 
 // Select a cat when clicked
@@ -114,6 +157,7 @@ renameCatButton.addEventListener('click', () => {
             selectedCat.setAttribute('data-name', newName);
             selectedCat.parentElement.querySelector('.cat-name').textContent = newName;
             showSpeechBubble(selectedCat, `Renamed to ${newName}`);
+            saveCatsToLocalStorage();
         }
     } else {
         alert('Select a cat to rename!');
@@ -125,6 +169,7 @@ removeCatButton.addEventListener('click', () => {
     if (selectedCat) {
         selectedCat.parentElement.remove();
         selectedCat = null;
+        saveCatsToLocalStorage(); // Update storage after removal
     } else {
         alert('Select a cat to remove!');
     }
@@ -160,3 +205,6 @@ function moveSmoothly(catWrapper, cat) {
 
     moveCat();
 }
+
+// Load cats from localStorage when the page is loaded
+window.addEventListener('load', loadCatsFromLocalStorage);
