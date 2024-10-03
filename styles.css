@@ -13,18 +13,20 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
+    padding: 10px;
 }
 
 /* Title */
 h1 {
     color: #FF4081;
     margin-bottom: 20px;
+    text-align: center;
 }
 
 /* Game Area */
 .game-area {
-    width: 80vw;
-    height: 50vh;
+    width: 90vw;
+    height: 60vh;
     background-color: #FFF8E1;
     border: 2px solid #FF4081;
     position: relative;
@@ -115,25 +117,50 @@ h1 {
     animation: walk-cycle 1s steps(12) infinite;
 }
 
-/* Controls */
+/* Controls and actions styling */
 .controls, .actions {
-    margin: 10px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
 }
 
-button, input {
+/* Buttons */
+button {
     padding: 10px;
     border: none;
     font-size: 16px;
-    margin-right: 10px;
     background-color: #FF4081;
     color: white;
     border-radius: 5px;
-}
-
-input {
-    width: 200px;
+    flex-grow: 1;
+    min-width: 100px;
+    text-align: center;
 }
 
 button:hover {
     background-color: #E91E63;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 24px;
+    }
+
+    .game-area {
+        width: 100vw;
+        height: 50vh;
+    }
+
+    button {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .cat {
+        width: 40px;
+        height: 40px;
+    }
 }
