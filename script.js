@@ -15,13 +15,16 @@ function saveCatsToLocalStorage() {
         const catElement = catWrapper.querySelector('.cat');
         const catName = catWrapper.querySelector('.cat-name').textContent;
         const filter = catElement.style.filter; // Get hue and saturation
+        const left = catWrapper.style.left;
+        const top = catWrapper.style.top;
+
         cats.push({
             name: catName,
             filter: filter,
             position: {
-                left: catWrapper.style.left,
-                top: catWrapper.style.top,
-            }
+                left: left,
+                top: top,
+            },
         });
     });
     localStorage.setItem('cats', JSON.stringify(cats));
