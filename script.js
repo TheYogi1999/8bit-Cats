@@ -1,5 +1,6 @@
 let catCounter = 0;
 let selectedCat = null;
+let isDragging = false;
 
 const catContainer = document.getElementById('cat-container');
 const addCatButton = document.getElementById('add-cat');
@@ -53,21 +54,26 @@ function createCat(catName, filter, left, top) {
 
     const newCat = document.createElement('div');
     newCat.classList.add('cat');
-    newCat.draggable = true;
+    newCat.setAttribute('draggable', 'false'); // Disable built-in dragging
     newCat.setAttribute('data-name', newCatName.textContent);
 
     // Apply the given filter (hue and saturation)
     if (filter) {
         newCat.style.filter = filter;
     } else {
-        // Generate random hue and saturation if not provided
         const randomHue = Math.random() * 360;
         const randomSaturation = Math.random() * 2 + 0.5;
         newCat.style.filter = `hue-rotate(${randomHue}deg) saturate(${randomSaturation})`;
     }
 
-    // Add event listeners
-    newCat.addEventListener('dragstart', dragStart);
+    // Add event listeners for dragging on both desktop and mobile
+    newCat.addEventListener('mousedown', startDrag);
+    newCat.addEventListener('touchstart', startDrag);
+    window.addEventListener('mouseup', stopDrag);
+    window.addEventListener('touchend', stopDrag);
+    window.addEventListener('mousemove', drag);
+    window.addEventListener('touchmove', drag);
+
     newCat.addEventListener('click', selectCat);
 
     // Attach the name and cat to the wrapper
@@ -82,32 +88,42 @@ function createCat(catName, filter, left, top) {
     moveSmoothly(newCatWrapper, newCat);
 }
 
-// Add a new cat when the "Add Cat" button is clicked
-addCatButton.addEventListener('click', () => {
-    createCat();
-});
-
-// Drag and drop functionality
-function dragStart(e) {
+// Start dragging
+function startDrag(e) {
     selectedCat = e.target;
-    e.dataTransfer.setData('text/plain', null);
+    isDragging = true;
 }
 
-// Set the position of the cat on drag end
-catContainer.addEventListener('dragover', (e) => {
-    e.preventDefault();
-});
+// Stop dragging
+function stopDrag() {
+    isDragging = false;
+    if (selectedCat) {
+        saveCatsToLocalStorage(); // Save new position
+    }
+    selectedCat = null;
+}
 
-catContainer.addEventListener('drop', (e) => {
+// Handle dragging
+function drag(e) {
+    if (!isDragging || !selectedCat) return;
+
+    // Get current mouse or touch position
+    let x, y;
+    if (e.touches && e.touches.length) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+    } else {
+        x = e.clientX;
+        y = e.clientY;
+    }
+
     const rect = catContainer.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    selectedCat.parentElement.style.left = `${x}px`;
-    selectedCat.parentElement.style.top = `${y}px`;
+    const newX = x - rect.left - 25;  // Center the cat
+    const newY = y - rect.top - 25;   // Center the cat
 
-    // Save new position to localStorage
-    saveCatsToLocalStorage();
-});
+    selectedCat.parentElement.style.left = `${newX}px`;
+    selectedCat.parentElement.style.top = `${newY}px`;
+}
 
 // Select a cat when clicked
 function selectCat(e) {
@@ -127,6 +143,11 @@ function showSpeechBubble(cat, message) {
         bubble.remove();
     }, 3000);
 }
+
+// Add a new cat when the "Add Cat" button is clicked
+addCatButton.addEventListener('click', () => {
+    createCat();
+});
 
 // Feed the selected cat
 feedCatButton.addEventListener('click', () => {
