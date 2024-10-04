@@ -1,6 +1,8 @@
 let catCounter = 0;
 let selectedCat = null;
 let isDragging = false;
+let isMoving = false; // Track if the cat is moving automatically
+let dragStartTime;
 
 const catContainer = document.getElementById('cat-container');
 const addCatButton = document.getElementById('add-cat');
@@ -74,6 +76,7 @@ function createCat(catName, filter, left, top) {
     window.addEventListener('mousemove', drag);
     window.addEventListener('touchmove', drag);
 
+    // Add event listener for selecting
     newCat.addEventListener('click', selectCat);
 
     // Attach the name and cat to the wrapper
@@ -90,17 +93,38 @@ function createCat(catName, filter, left, top) {
 
 // Start dragging
 function startDrag(e) {
+    e.preventDefault();
+    dragStartTime = Date.now();
     selectedCat = e.target;
     isDragging = true;
+
+    // Pause the cat's movement during dragging
+    const catWrapper = selectedCat.parentElement;
+    catWrapper.classList.add('pause-movement'); // Add class to pause movement
+    isMoving = false; // Prevent further movement while dragging
 }
 
 // Stop dragging
 function stopDrag() {
-    isDragging = false;
-    if (selectedCat) {
-        saveCatsToLocalStorage(); // Save new position
+    if (isDragging) {
+        const dragDuration = Date.now() - dragStartTime;
+
+        // If dragging lasted less than 200ms, treat it as a click
+        if (dragDuration < 200) {
+            selectCat({ target: selectedCat });
+        }
+
+        isDragging = false;
+
+        if (selectedCat) {
+            // Resume cat movement after dragging ends
+            const catWrapper = selectedCat.parentElement;
+            catWrapper.classList.remove('pause-movement');
+            saveCatsToLocalStorage(); // Save new position
+        }
+
+        selectedCat = null;
     }
-    selectedCat = null;
 }
 
 // Handle dragging
@@ -127,8 +151,10 @@ function drag(e) {
 
 // Select a cat when clicked
 function selectCat(e) {
-    selectedCat = e.target;
-    showSpeechBubble(selectedCat, `Selected: ${selectedCat.getAttribute('data-name')}`);
+    if (!isDragging) {
+        selectedCat = e.target;
+        showSpeechBubble(selectedCat, `Selected: ${selectedCat.getAttribute('data-name')}`);
+    }
 }
 
 // Show a speech bubble near the cat with a custom message
@@ -200,29 +226,31 @@ removeCatButton.addEventListener('click', () => {
 // Smoothly move cats randomly within the container with pauses and flipping
 function moveSmoothly(catWrapper, cat) {
     function moveCat() {
-        const maxX = catContainer.offsetWidth - catWrapper.offsetWidth;
-        const maxY = catContainer.offsetHeight - catWrapper.offsetHeight;
+        if (!catWrapper.classList.contains('pause-movement')) {
+            const maxX = catContainer.offsetWidth - catWrapper.offsetWidth;
+            const maxY = catContainer.offsetHeight - catWrapper.offsetHeight;
 
-        const currentX = parseFloat(catWrapper.style.left);
-        const newX = Math.random() * maxX;
-        const newY = Math.random() * maxY;
+            const currentX = parseFloat(catWrapper.style.left);
+            const newX = Math.random() * maxX;
+            const newY = Math.random() * maxY;
 
-        if (newX < currentX) {
-            cat.style.transform = 'scaleX(-1)';
-        } else {
-            cat.style.transform = 'scaleX(1)';
+            if (newX < currentX) {
+                cat.style.transform = 'scaleX(-1)';
+            } else {
+                cat.style.transform = 'scaleX(1)';
+            }
+
+            cat.classList.add('walking');
+            catWrapper.style.left = `${newX}px`;
+            catWrapper.style.top = `${newY}px`;
+
+            const pauseDuration = Math.random() * 3000 + 4000;
+
+            setTimeout(() => {
+                cat.classList.remove('walking');
+                moveCat(); // Continue moving unless paused
+            }, pauseDuration + 8000);
         }
-
-        cat.classList.add('walking');
-        catWrapper.style.left = `${newX}px`;
-        catWrapper.style.top = `${newY}px`;
-
-        const pauseDuration = Math.random() * 3000 + 4000;
-
-        setTimeout(() => {
-            cat.classList.remove('walking');
-            moveCat();
-        }, pauseDuration + 8000);
     }
 
     moveCat();
