@@ -1,8 +1,8 @@
 let catCounter = 0;
 let selectedCat = null;
 let isDragging = false;
-let isMoving = false; // Track if the cat is moving automatically
-let dragStartTime;
+let initialX = 0, initialY = 0;  // Track initial position of drag/touch
+let offsetX = 0, offsetY = 0;    // Track mouse/touch offset
 
 const catContainer = document.getElementById('cat-container');
 const addCatButton = document.getElementById('add-cat');
@@ -70,11 +70,12 @@ function createCat(catName, filter, left, top) {
 
     // Add event listeners for dragging on both desktop and mobile
     newCat.addEventListener('mousedown', startDrag);
-    newCat.addEventListener('touchstart', startDrag);
+    newCat.addEventListener('touchstart', startDrag, { passive: false });
+
     window.addEventListener('mouseup', stopDrag);
     window.addEventListener('touchend', stopDrag);
     window.addEventListener('mousemove', drag);
-    window.addEventListener('touchmove', drag);
+    window.addEventListener('touchmove', drag, { passive: false });
 
     // Add event listener for selecting
     newCat.addEventListener('click', selectCat);
@@ -94,35 +95,32 @@ function createCat(catName, filter, left, top) {
 // Start dragging
 function startDrag(e) {
     e.preventDefault();
-    dragStartTime = Date.now();
-    selectedCat = e.target;
     isDragging = true;
 
-    // Pause the cat's movement during dragging
-    const catWrapper = selectedCat.parentElement;
-    catWrapper.classList.add('pause-movement'); // Add class to pause movement
-    isMoving = false; // Prevent further movement while dragging
+    if (e.type === 'touchstart') {
+        initialX = e.touches[0].clientX;
+        initialY = e.touches[0].clientY;
+    } else {
+        initialX = e.clientX;
+        initialY = e.clientY;
+    }
+
+    const rect = selectedCat ? selectedCat.parentElement.getBoundingClientRect() : null;
+    if (rect) {
+        offsetX = initialX - rect.left;
+        offsetY = initialY - rect.top;
+    }
+
+    selectedCat = e.target;
+    pauseCatMovement(selectedCat); // Pause movement while dragging
 }
 
 // Stop dragging
 function stopDrag() {
-    if (isDragging) {
-        const dragDuration = Date.now() - dragStartTime;
-
-        // If dragging lasted less than 200ms, treat it as a click
-        if (dragDuration < 200) {
-            selectCat({ target: selectedCat });
-        }
-
-        isDragging = false;
-
-        if (selectedCat) {
-            // Resume cat movement after dragging ends
-            const catWrapper = selectedCat.parentElement;
-            catWrapper.classList.remove('pause-movement');
-            saveCatsToLocalStorage(); // Save new position
-        }
-
+    isDragging = false;
+    if (selectedCat) {
+        resumeCatMovement(selectedCat); // Resume movement after dragging
+        saveCatsToLocalStorage(); // Save new position
         selectedCat = null;
     }
 }
@@ -131,7 +129,8 @@ function stopDrag() {
 function drag(e) {
     if (!isDragging || !selectedCat) return;
 
-    // Get current mouse or touch position
+    e.preventDefault();
+
     let x, y;
     if (e.touches && e.touches.length) {
         x = e.touches[0].clientX;
@@ -141,9 +140,8 @@ function drag(e) {
         y = e.clientY;
     }
 
-    const rect = catContainer.getBoundingClientRect();
-    const newX = x - rect.left - 25;  // Center the cat
-    const newY = y - rect.top - 25;   // Center the cat
+    const newX = x - offsetX;
+    const newY = y - offsetY;
 
     selectedCat.parentElement.style.left = `${newX}px`;
     selectedCat.parentElement.style.top = `${newY}px`;
@@ -222,6 +220,18 @@ removeCatButton.addEventListener('click', () => {
         alert('Select a cat to remove!');
     }
 });
+
+// Pause movement for the selected cat during dragging
+function pauseCatMovement(cat) {
+    const catWrapper = cat.parentElement;
+    catWrapper.classList.add('pause-movement'); // Add class to pause movement
+}
+
+// Resume movement for the selected cat after dragging
+function resumeCatMovement(cat) {
+    const catWrapper = cat.parentElement;
+    catWrapper.classList.remove('pause-movement'); // Remove class to resume movement
+}
 
 // Smoothly move cats randomly within the container with pauses and flipping
 function moveSmoothly(catWrapper, cat) {
