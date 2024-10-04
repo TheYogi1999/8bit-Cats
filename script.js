@@ -1,8 +1,10 @@
 let catCounter = 0;
 let selectedCat = null;
 let isDragging = false;
-let initialX = 0, initialY = 0;  // Track initial position of drag/touch
-let offsetX = 0, offsetY = 0;    // Track mouse/touch offset
+let dragStartX = 0;
+let dragStartY = 0;
+let catStartX = 0;
+let catStartY = 0;
 
 const catContainer = document.getElementById('cat-container');
 const addCatButton = document.getElementById('add-cat');
@@ -68,7 +70,7 @@ function createCat(catName, filter, left, top) {
         newCat.style.filter = `hue-rotate(${randomHue}deg) saturate(${randomSaturation})`;
     }
 
-    // Add event listeners for dragging on both desktop and mobile
+    // Add event listeners for dragging
     newCat.addEventListener('mousedown', startDrag);
     newCat.addEventListener('touchstart', startDrag, { passive: false });
 
@@ -95,23 +97,23 @@ function createCat(catName, filter, left, top) {
 // Start dragging
 function startDrag(e) {
     e.preventDefault();
-    isDragging = true;
-
-    if (e.type === 'touchstart') {
-        initialX = e.touches[0].clientX;
-        initialY = e.touches[0].clientY;
-    } else {
-        initialX = e.clientX;
-        initialY = e.clientY;
-    }
-
-    const rect = selectedCat ? selectedCat.parentElement.getBoundingClientRect() : null;
-    if (rect) {
-        offsetX = initialX - rect.left;
-        offsetY = initialY - rect.top;
-    }
 
     selectedCat = e.target;
+    const catWrapper = selectedCat.parentElement;
+    const rect = catWrapper.getBoundingClientRect();
+
+    if (e.type === 'touchstart') {
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+    } else {
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+    }
+
+    catStartX = rect.left - catContainer.getBoundingClientRect().left;
+    catStartY = rect.top - catContainer.getBoundingClientRect().top;
+
+    isDragging = true;
     pauseCatMovement(selectedCat); // Pause movement while dragging
 }
 
@@ -131,20 +133,21 @@ function drag(e) {
 
     e.preventDefault();
 
-    let x, y;
-    if (e.touches && e.touches.length) {
-        x = e.touches[0].clientX;
-        y = e.touches[0].clientY;
+    let currentX, currentY;
+
+    if (e.type === 'touchmove') {
+        currentX = e.touches[0].clientX;
+        currentY = e.touches[0].clientY;
     } else {
-        x = e.clientX;
-        y = e.clientY;
+        currentX = e.clientX;
+        currentY = e.clientY;
     }
 
-    const newX = x - offsetX;
-    const newY = y - offsetY;
+    const deltaX = currentX - dragStartX;
+    const deltaY = currentY - dragStartY;
 
-    selectedCat.parentElement.style.left = `${newX}px`;
-    selectedCat.parentElement.style.top = `${newY}px`;
+    selectedCat.parentElement.style.left = `${catStartX + deltaX}px`;
+    selectedCat.parentElement.style.top = `${catStartY + deltaY}px`;
 }
 
 // Select a cat when clicked
