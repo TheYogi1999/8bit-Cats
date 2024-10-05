@@ -1,127 +1,92 @@
-let canvas = document.getElementById("gameCanvas");
-let ctx = canvas.getContext("2d");
-canvas.width = 400;
-canvas.height = 300;
-
+// Global variables
 let cats = [];
-let catImages = [];
-let currentCat = 0;
-let catNameInput = document.getElementById("catName");
+let catColors = ['#FFB6C1', '#87CEEB', '#98FB98', '#FFD700']; // Cute pastel color palette
 
-// Preload cat images
-for (let i = 1; i <= 12; i++) {
-    let img = new Image();
-    img.src = `cat1/cat1_${i}.png`;
-    catImages.push(img);
-}
-
-// Cat object
-class Cat {
-    constructor(name, color) {
-        this.name = name;
-        this.x = Math.random() * (canvas.width - 50);
-        this.y = Math.random() * (canvas.height - 50);
-        this.frame = 0;
-        this.speed = Math.random() * 2 + 1;
-        this.direction = 1; // 1 for right, -1 for left
-        this.hue = color.hue;
-        this.saturation = color.saturation;
-    }
-
-    draw() {
-        ctx.save();
-        ctx.filter = `hue-rotate(${this.hue}deg) saturate(${this.saturation}%)`;
-        ctx.translate(this.x, this.y);
-        if (this.direction === -1) {
-            ctx.scale(-1, 1); // Flip the image for left direction
-            ctx.translate(-50, 0); // Translate it back after flipping
-        }
-        ctx.drawImage(catImages[this.frame], 0, 0, 50, 50);
-        ctx.restore();
-    }
-
-    update() {
-        this.x += this.speed * this.direction;
-        if (this.x > canvas.width - 50 || this.x < 0) {
-            this.direction *= -1; // Change direction at edges
-        }
-
-        // Update frame for animation
-        this.frame = (this.frame + 1) % catImages.length;
-    }
-
-    showMessage(message) {
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(this.x, this.y - 20, 80, 20);
-        ctx.fillStyle = "#000";
-        ctx.fillText(message, this.x, this.y - 5);
-    }
-}
-
-// Random color generator for cats
-function randomColor() {
-    return {
-        hue: Math.random() * 360,
-        saturation: Math.random() * 100 + 50
-    };
-}
-
-// Create a new cat
-function createCat(name) {
-    let color = randomColor();
-    let newCat = new Cat(name, color);
-    cats.push(newCat);
-    saveCats(); // Save the cats' data
-}
-
-// Save the cat names and colors locally
-function saveCats() {
-    let catData = cats.map(cat => ({ name: cat.name, hue: cat.hue, saturation: cat.saturation }));
-    localStorage.setItem("cats", JSON.stringify(catData));
-}
-
-// Load the cats from local storage
-function loadCats() {
-    let storedCats = localStorage.getItem("cats");
-    if (storedCats) {
-        let catData = JSON.parse(storedCats);
-        catData.forEach(cat => {
-            cats.push(new Cat(cat.name, { hue: cat.hue, saturation: cat.saturation }));
-        });
-    }
-}
-
-// Handle feeding, petting, etc.
-function handleAction(action) {
-    if (cats.length === 0) return;
-    cats[currentCat].showMessage(action);
-}
-
-// Set up buttons
-document.getElementById("feedButton").addEventListener("click", () => handleAction("Fed!"));
-document.getElementById("waterButton").addEventListener("click", () => handleAction("Watered!"));
-document.getElementById("snackButton").addEventListener("click", () => handleAction("Snack!"));
-document.getElementById("toyButton").addEventListener("click", () => handleAction("Played!"));
-document.getElementById("petButton").addEventListener("click", () => handleAction("Petted!"));
-
-// Add a new cat with a name and random color
-catNameInput.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && catNameInput.value.trim()) {
-        createCat(catNameInput.value.trim());
-        catNameInput.value = "";
+// Load saved cat data
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('cats')) {
+        cats = JSON.parse(localStorage.getItem('cats'));
+        cats.forEach(cat => createCat(cat.name, cat.color));
     }
 });
 
-// Animation loop
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    cats.forEach(cat => {
-        cat.update();
-        cat.draw();
-    });
-    requestAnimationFrame(gameLoop);
+// Cat constructor
+function createCat(name, color) {
+    const catElem = document.createElement('div');
+    catElem.classList.add('cat');
+    catElem.dataset.name = name;
+    catElem.dataset.color = color;
+    catElem.style.backgroundImage = `url(assets/cat1/cat1_1.png)`;
+    catElem.style.filter = `hue-rotate(${Math.random() * 360}deg) saturate(${Math.random() * 1.5})`;
+
+    // Random starting position
+    catElem.style.left = `${Math.random() * 80}vw`;
+    catElem.style.top = `${Math.random() * 40}vh`;
+    document.getElementById('cat-area').appendChild(catElem);
+
+    animateCat(catElem);
+
+    // Store cat in global array
+    cats.push({ name, color });
+
+    // Save cats in local storage
+    localStorage.setItem('cats', JSON.stringify(cats));
 }
 
-// Initialize game
-loadCats();
-gameLoop();
+// Cat animation (simple frame cycling)
+function animateCat(catElem) {
+    let frame = 1;
+    setInterval(() => {
+        frame = (frame % 12) + 1;
+        catElem.style.backgroundImage = `url(assets/cat1/cat1_${frame}.png)`;
+
+        // Randomly move or stay still
+        if (Math.random() > 0.3) {
+            let left = parseFloat(catElem.style.left);
+            let top = parseFloat(catElem.style.top);
+
+            catElem.style.left = `${Math.min(80, Math.max(0, left + (Math.random() - 0.5) * 10))}vw`;
+            catElem.style.top = `${Math.min(40, Math.max(0, top + (Math.random() - 0.5) * 10))}vh`;
+
+            if (Math.random() > 0.5) {
+                catElem.style.transform = `scaleX(-1)`; // Flip left
+            } else {
+                catElem.style.transform = `scaleX(1)`; // Face right
+            }
+        }
+    }, 300);
+}
+
+// Petting the cat, feeding, and playing
+document.getElementById('feedBtn').addEventListener('click', () => interactWithCat('eating snacks'));
+document.getElementById('toyBtn').addEventListener('click', () => interactWithCat('playing with a toy'));
+document.getElementById('petBtn').addEventListener('click', () => interactWithCat('being petted'));
+
+function interactWithCat(action) {
+    const catsOnScreen = document.querySelectorAll('.cat');
+    catsOnScreen.forEach(cat => {
+        const bubble = document.createElement('div');
+        bubble.classList.add('bubble');
+        bubble.textContent = `${cat.dataset.name} is ${action}!`;
+        cat.appendChild(bubble);
+
+        setTimeout(() => bubble.remove(), 2000); // Text bubble disappears
+    });
+}
+
+// Name your cat
+document.getElementById('nameCatBtn').addEventListener('click', () => {
+    const catName = document.getElementById('catName').value;
+    if (catName) {
+        const randomColor = catColors[Math.floor(Math.random() * catColors.length)];
+        createCat(catName, randomColor);
+        document.getElementById('catName').value = ''; // Clear input
+    }
+});
+
+// Responsive adjustments for mobile
+window.addEventListener('resize', () => {
+    const gameArea = document.getElementById('cat-area');
+    gameArea.style.width = `${window.innerWidth * 0.9}px`;
+    gameArea.style.height = `${window.innerHeight * 0.5}px`;
+});
