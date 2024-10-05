@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8-Bit Cat Game</title>
+    <title>8-bit Cats</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
+        <div id="cat-area"></div>
         <div id="controls">
-            <input type="text" id="catName" placeholder="Name your cat">
-            <button id="feedButton">Feed</button>
-            <button id="waterButton">Give Water</button>
-            <button id="snackButton">Give Snack</button>
-            <button id="toyButton">Give Toy</button>
-            <button id="petButton">Pet</button>
+            <label for="catName">Name Your Cat:</label>
+            <input type="text" id="catName" placeholder="Enter cat name">
+            <button id="nameCatBtn">Name Cat</button>
+            <button id="feedBtn">Feed</button>
+            <button id="toyBtn">Give Toy</button>
+            <button id="petBtn">Pet</button>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
