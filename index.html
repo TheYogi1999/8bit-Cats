@@ -3,21 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8-bit Cats</title>
+    <title>8-bit Cats Game</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
-        <div id="controls">
-            <button id="add-cat">Add Cat</button>
-            <button id="rename-cat">Rename Cat</button>
-            <button id="remove-cat">Remove Cat</button>
-            <button id="feed-cat">Feed Cat</button>
-            <button id="give-toy">Give Toy</button>
-            <button id="pet-cat">Pet Cat</button>
-        </div>
+    <h1>8-bit Cats Game</h1>
 
-        <div id="cat-canvas"></div>
+    <div id="cat-selector">
+        <button onclick="addCat('cat1')">Add Cat</button>
+    </div>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <!-- Cat action menu -->
+    <div id="cat-menu" style="display: none;">
+        <h2 id="cat-name">Cat Name: Unknown</h2>
+        <button onclick="patCat()">Pat Cat</button>
+        <button onclick="feedCat()">Feed Cat</button>
+        <button onclick="giveWater()">Give Water</button>
+        <button onclick="giveToy()">Give Toy</button>
+        <button onclick="giveSnack()">Give Snack</button>
+        <button onclick="renameCat()">Rename Cat</button>
+        <button onclick="removeCat()">Remove Cat</button>
+
+        <!-- Progress bars for hunger, thirst, affection, and happiness -->
+        <div class="progress-bar">
+            <label>Hunger</label>
+            <div id="hunger-bar" class="bar">
+                <div id="hunger-fill" class="fill pastel-yellow"></div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <label>Thirst</label>
+            <div id="thirst-bar" class="bar">
+                <div id="thirst-fill" class="fill pastel-blue"></div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <label>Affection</label>
+            <div id="affection-bar" class="bar">
+                <div id="affection-fill" class="fill pastel-pink"></div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <label>Happiness</label>
+            <div id="happiness-bar" class="bar">
+                <div id="happiness-fill" class="fill pastel-green"></div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
