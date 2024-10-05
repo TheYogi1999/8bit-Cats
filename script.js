@@ -4,10 +4,10 @@ let cats = [];
 let selectedCat = null;
 let textBubbles = [];
 
-// Set canvas size based on screen size
+// Set canvas size based on screen size and increase maximum size
 function resizeCanvas() {
-    canvas.width = Math.min(window.innerWidth * 0.95, 800); // 95% of screen width, max 800px
-    canvas.height = Math.min(window.innerHeight * 0.6, 600); // 60% of screen height, max 600px
+    canvas.width = Math.min(window.innerWidth * 0.95, 1200); // 95% of screen width, max 1200px
+    canvas.height = Math.min(window.innerHeight * 0.8, 800); // 80% of screen height, max 800px
 }
 
 // Resize the canvas on window resize
