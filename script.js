@@ -1,137 +1,127 @@
-// Store cats in local storage
-let cats = JSON.parse(localStorage.getItem('cats')) || [];
+let canvas = document.getElementById("gameCanvas");
+let ctx = canvas.getContext("2d");
+canvas.width = 400;
+canvas.height = 300;
 
-const addCatBtn = document.getElementById('add-cat-btn');
-const catList = document.getElementById('cat-list');
-const catDetails = document.getElementById('cat-details');
-const catNameElem = document.getElementById('cat-name');
-const catFeedback = document.getElementById('cat-feedback');
-const catCanvas = document.getElementById('cat-canvas');
-
-// Initialize canvas context
-let ctx = catCanvas.getContext('2d');
-let currentCat = null;
+let cats = [];
 let catImages = [];
-let currentFrame = 0;
-let direction = 1; // 1 for right, -1 for left
-let isWalking = false;
+let currentCat = 0;
+let catNameInput = document.getElementById("catName");
 
+// Preload cat images
 for (let i = 1; i <= 12; i++) {
     let img = new Image();
-    img.src = `images/cat1/cat1_${i}.png`;
+    img.src = `cat1/cat1_${i}.png`;
     catImages.push(img);
 }
 
-// Add new cat
-addCatBtn.addEventListener('click', () => {
-    const catName = prompt("Name your new cat:");
-    if (catName) {
-        const newCat = {
-            name: catName,
-            color: getRandomColor(),
-            hunger: 100,
-            happiness: 100
-        };
-        cats.push(newCat);
-        saveCats();
-        displayCats();
+// Cat object
+class Cat {
+    constructor(name, color) {
+        this.name = name;
+        this.x = Math.random() * (canvas.width - 50);
+        this.y = Math.random() * (canvas.height - 50);
+        this.frame = 0;
+        this.speed = Math.random() * 2 + 1;
+        this.direction = 1; // 1 for right, -1 for left
+        this.hue = color.hue;
+        this.saturation = color.saturation;
     }
-});
 
-// Save cats to localStorage
+    draw() {
+        ctx.save();
+        ctx.filter = `hue-rotate(${this.hue}deg) saturate(${this.saturation}%)`;
+        ctx.translate(this.x, this.y);
+        if (this.direction === -1) {
+            ctx.scale(-1, 1); // Flip the image for left direction
+            ctx.translate(-50, 0); // Translate it back after flipping
+        }
+        ctx.drawImage(catImages[this.frame], 0, 0, 50, 50);
+        ctx.restore();
+    }
+
+    update() {
+        this.x += this.speed * this.direction;
+        if (this.x > canvas.width - 50 || this.x < 0) {
+            this.direction *= -1; // Change direction at edges
+        }
+
+        // Update frame for animation
+        this.frame = (this.frame + 1) % catImages.length;
+    }
+
+    showMessage(message) {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(this.x, this.y - 20, 80, 20);
+        ctx.fillStyle = "#000";
+        ctx.fillText(message, this.x, this.y - 5);
+    }
+}
+
+// Random color generator for cats
+function randomColor() {
+    return {
+        hue: Math.random() * 360,
+        saturation: Math.random() * 100 + 50
+    };
+}
+
+// Create a new cat
+function createCat(name) {
+    let color = randomColor();
+    let newCat = new Cat(name, color);
+    cats.push(newCat);
+    saveCats(); // Save the cats' data
+}
+
+// Save the cat names and colors locally
 function saveCats() {
-    localStorage.setItem('cats', JSON.stringify(cats));
+    let catData = cats.map(cat => ({ name: cat.name, hue: cat.hue, saturation: cat.saturation }));
+    localStorage.setItem("cats", JSON.stringify(catData));
 }
 
-// Display list of cats
-function displayCats() {
-    catList.innerHTML = "";
-    cats.forEach((cat, index) => {
-        let catDiv = document.createElement('div');
-        catDiv.textContent = cat.name;
-        catDiv.style.backgroundColor = cat.color;
-        catDiv.addEventListener('click', () => selectCat(index));
-        catList.appendChild(catDiv);
+// Load the cats from local storage
+function loadCats() {
+    let storedCats = localStorage.getItem("cats");
+    if (storedCats) {
+        let catData = JSON.parse(storedCats);
+        catData.forEach(cat => {
+            cats.push(new Cat(cat.name, { hue: cat.hue, saturation: cat.saturation }));
+        });
+    }
+}
+
+// Handle feeding, petting, etc.
+function handleAction(action) {
+    if (cats.length === 0) return;
+    cats[currentCat].showMessage(action);
+}
+
+// Set up buttons
+document.getElementById("feedButton").addEventListener("click", () => handleAction("Fed!"));
+document.getElementById("waterButton").addEventListener("click", () => handleAction("Watered!"));
+document.getElementById("snackButton").addEventListener("click", () => handleAction("Snack!"));
+document.getElementById("toyButton").addEventListener("click", () => handleAction("Played!"));
+document.getElementById("petButton").addEventListener("click", () => handleAction("Petted!"));
+
+// Add a new cat with a name and random color
+catNameInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && catNameInput.value.trim()) {
+        createCat(catNameInput.value.trim());
+        catNameInput.value = "";
+    }
+});
+
+// Animation loop
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    cats.forEach(cat => {
+        cat.update();
+        cat.draw();
     });
+    requestAnimationFrame(gameLoop);
 }
 
-function selectCat(index) {
-    currentCat = cats[index];
-    catDetails.style.display = 'block';
-    catNameElem.textContent = currentCat.name;
-    startCatAnimation();
-    showCatFeedback(`${currentCat.name} is here!`);
-}
-
-// Randomize cat color
-function getRandomColor() {
-    return `hsl(${Math.random() * 360}, 70%, 80%)`;
-}
-
-// Animate cat
-function startCatAnimation() {
-    currentFrame = 0;
-    isWalking = false;
-    ctx.clearRect(0, 0, catCanvas.width, catCanvas.height);
-    drawCat();
-}
-
-// Draw the cat on the canvas
-function drawCat() {
-    ctx.clearRect(0, 0, catCanvas.width, catCanvas.height);
-    ctx.save();
-    if (direction === -1) {
-        ctx.scale(-1, 1); // Flip the image for walking left
-        ctx.drawImage(catImages[currentFrame], -catCanvas.width, 0, catCanvas.width, catCanvas.height);
-    } else {
-        ctx.drawImage(catImages[currentFrame], 0, 0, catCanvas.width, catCanvas.height);
-    }
-    ctx.restore();
-}
-
-// Move cat (change direction)
-function moveCat() {
-    direction = Math.random() > 0.5 ? 1 : -1;
-    isWalking = true;
-    updateCatFrame();
-}
-
-function updateCatFrame() {
-    if (isWalking) {
-        currentFrame = (currentFrame + 1) % catImages.length;
-        drawCat();
-        setTimeout(updateCatFrame, 200);
-    }
-}
-
-// Show cat feedback
-function showCatFeedback(text) {
-    catFeedback.textContent = text;
-    setTimeout(() => {
-        catFeedback.textContent = '';
-    }, 3000);
-}
-
-// Cat actions
-document.getElementById('feed-cat-btn').addEventListener('click', () => {
-    if (currentCat) {
-        currentCat.hunger = Math.min(currentCat.hunger + 10, 100);
-        showCatFeedback(`${currentCat.name} is happily eating!`);
-    }
-});
-
-document.getElementById('give-toy-btn').addEventListener('click', () => {
-    if (currentCat) {
-        currentCat.happiness = Math.min(currentCat.happiness + 10, 100);
-        showCatFeedback(`${currentCat.name} is playing with the toy!`);
-    }
-});
-
-document.getElementById('pet-cat-btn').addEventListener('click', () => {
-    if (currentCat) {
-        showCatFeedback(`${currentCat.name} purrs happily!`);
-    }
-});
-
-// Initialize the game
-displayCats();
+// Initialize game
+loadCats();
+gameLoop();
