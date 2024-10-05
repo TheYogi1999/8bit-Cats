@@ -3,32 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>8bit-Cats</title>
-    <!-- Link to the external CSS file -->
+    <title>8-bit Cats Game</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div id="game-container">
+        <h1>8-bit Cats</h1>
+        <div id="cat-list"></div>
+        <button id="add-cat-btn">Add New Cat</button>
 
-    <h1>8bit-Cats</h1>
-
-    <div class="game-area">
-        <div id="cat-container" class="cat-container">
-            <!-- Cats will be added here -->
+        <div id="cat-details">
+            <h2 id="cat-name"></h2>
+            <div class="cat-actions">
+                <button id="feed-cat-btn">Feed</button>
+                <button id="give-toy-btn">Give Toy</button>
+                <button id="pet-cat-btn">Pet</button>
+            </div>
+            <canvas id="cat-canvas"></canvas>
+            <div id="cat-feedback"></div>
         </div>
     </div>
 
-    <div class="controls">
-        <button id="add-cat">Add Cat</button>
-    </div>
-
-    <div class="actions">
-        <button id="feed-cat">Feed Cat</button>
-        <button id="pet-cat">Pet Cat</button>
-        <button id="rename-cat">Rename Cat</button>
-        <button id="remove-cat">Remove Cat</button>
-    </div>
-
-    <!-- Link to the external JavaScript file -->
     <script src="script.js"></script>
 </body>
 </html>
