@@ -35,7 +35,15 @@ canvas {
     border-radius: 8px; /* Rounded corners */
 }
 
-/* Responsive styling for buttons */
+/* Flexbox for button rows */
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+    margin-bottom: 10px;
+}
+
+/* Cute buttons */
 button {
     background-color: #FFCAD4; /* Soft pink */
     border: 2px solid #F77F00; /* Vibrant orange border */
@@ -45,8 +53,7 @@ button {
     font-family: 'Comic Sans MS', sans-serif;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    width: 100%; /* Full width on mobile */
-    margin: 5px 0; /* Add margin between buttons */
+    flex: 1; /* Make all buttons take up equal space */
 }
 
 button:hover {
@@ -97,6 +104,31 @@ button:focus {
 
 .pastel-green {
     background-color: #B5EAD7; /* Pastel green for happiness */
+}
+
+/* Music button styles */
+#toggleMusic {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #FFCAD4; /* Soft pink background */
+    border: 2px solid #F77F00; /* Vibrant orange border */
+    border-radius: 12px; /* Rounded corners */
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: 'Comic Sans MS', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 1000; /* Ensure it is always on top */
+}
+
+#toggleMusic:hover {
+    background-color: #FFD5E5; /* Lighter pink when hovered */
+}
+
+#toggleMusic:active {
+    background-color: #F77F00; /* Orange when pressed */
+    color: #FFF;
 }
 
 /* Media queries for smaller screens */
