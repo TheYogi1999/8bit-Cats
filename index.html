@@ -9,6 +9,15 @@
 <body>
     <h1>8-bit Cats Game</h1>
 
+    <!-- Audio element for background music -->
+    <audio id="backgroundMusic" loop>
+        <source src="8bit-song.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Music control button positioned at the top right -->
+    <button id="toggleMusic" onclick="toggleMusic()">▶️</button>
+
     <div id="cat-selector">
         <button onclick="addCat('cat1')">Add Cat</button>
     </div>
@@ -18,13 +27,23 @@
     <!-- Cat action menu -->
     <div id="cat-menu" style="display: none;">
         <h2 id="cat-name">Cat Name: Unknown</h2>
-        <button onclick="patCat()">Pat Cat</button>
-        <button onclick="feedCat()">Feed Cat</button>
-        <button onclick="giveWater()">Give Water</button>
-        <button onclick="giveToy()">Give Toy</button>
-        <button onclick="giveSnack()">Give Snack</button>
-        <button onclick="renameCat()">Rename Cat</button>
-        <button onclick="removeCat()">Remove Cat</button>
+
+        <!-- Button rows -->
+        <div class="button-row">
+            <button onclick="patCat()">Pat Cat</button>
+            <button onclick="feedCat()">Feed Cat</button>
+            <button onclick="giveWater()">Give Water</button>
+        </div>
+
+        <div class="button-row">
+            <button onclick="giveToy()">Give Toy</button>
+            <button onclick="giveSnack()">Give Snack</button>
+        </div>
+
+        <div class="button-row">
+            <button onclick="renameCat()">Rename Cat</button>
+            <button onclick="removeCat()">Remove Cat</button>
+        </div>
 
         <!-- Progress bars for hunger, thirst, affection, and happiness -->
         <div class="progress-bar">
