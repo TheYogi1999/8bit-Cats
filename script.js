@@ -4,6 +4,16 @@ let cats = [];
 let selectedCat = null;
 let textBubbles = [];
 
+// Set canvas size based on screen size
+function resizeCanvas() {
+    canvas.width = Math.min(window.innerWidth * 0.95, 800); // 95% of screen width, max 800px
+    canvas.height = Math.min(window.innerHeight * 0.6, 600); // 60% of screen height, max 600px
+}
+
+// Resize the canvas on window resize
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
 // Cat class
 class Cat {
     constructor(images, x, y, name = "Unknown") {
@@ -133,7 +143,7 @@ class Cat {
         }
     }
 
-    // Check if a point (mouse click) is inside the cat's area
+    // Check if a point (mouse click or touch) is inside the cat's area
     isClicked(mouseX, mouseY) {
         return mouseX >= this.x && mouseX <= this.x + 32 && mouseY >= this.y && mouseY <= this.y + 32;
     }
@@ -207,11 +217,15 @@ function addCat(catType) {
     cats.push(newCat);
 }
 
-// Handle canvas click to select cat
-canvas.addEventListener("click", function (event) {
+// Handle canvas click/touch to select cat
+canvas.addEventListener("click", handleCatInteraction);
+canvas.addEventListener("touchstart", handleCatInteraction);
+
+function handleCatInteraction(event) {
+    event.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const mouseX = (event.touches ? event.touches[0].clientX : event.clientX) - rect.left;
+    const mouseY = (event.touches ? event.touches[0].clientY : event.clientY) - rect.top;
 
     // Loop through all cats to check if one was clicked
     cats.forEach(cat => {
@@ -222,7 +236,7 @@ canvas.addEventListener("click", function (event) {
             updateProgressBars(); // Update progress bars for selected cat
         }
     });
-});
+}
 
 // Update progress bars for hunger, thirst, affection, and happiness
 function updateProgressBars() {
