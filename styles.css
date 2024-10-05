@@ -1,51 +1,49 @@
 body {
+    margin: 0;
     font-family: 'Arial', sans-serif;
-    background-color: #f5e1d9;
-    color: #555;
-    text-align: center;
+    background-color: #fce4ec; /* light pink */
+    color: #4a148c; /* deep purple for text */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 #game-container {
-    width: 90%;
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    border: 3px solid #f3a683;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f8bbd0;
     padding: 20px;
-    border-radius: 15px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-    color: #f08a5d;
+#gameCanvas {
+    background-color: #fff;
+    border: 2px solid #e91e63;
+    width: 400px;
+    height: 300px;
 }
 
-button {
-    background-color: #ffb3c1;
+#controls {
+    margin-top: 20px;
+}
+
+button, input {
+    margin: 5px;
+    padding: 10px;
     border: none;
-    padding: 10px 20px;
-    margin: 10px;
-    cursor: pointer;
     border-radius: 10px;
-    font-size: 16px;
+    background-color: #ba68c8;
+    color: #fff;
+    cursor: pointer;
+}
+
+input {
+    width: 200px;
 }
 
 button:hover {
-    background-color: #ff9aae;
-}
-
-#cat-details {
-    display: none;
-}
-
-#cat-feedback {
-    margin-top: 10px;
-    font-style: italic;
-    color: #6a0572;
-}
-
-#cat-canvas {
-    width: 200px;
-    height: 200px;
-    background-color: #eef2f3;
-    margin: 20px auto;
+    background-color: #ab47bc;
 }
