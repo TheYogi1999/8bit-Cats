@@ -45,12 +45,15 @@ function saveCats() {
     localStorage.setItem('cats', JSON.stringify(catsData));
 }
 
-// Load cats from localStorage
+// Load cats from localStorage and center them
 function loadCats() {
     const catsData = JSON.parse(localStorage.getItem('cats')) || [];
+    const centerX = canvas.width / 2 - 16; // Calculate the center of the canvas
+    const centerY = canvas.height / 2 - 16;
+
     catsData.forEach(data => {
         const catImages = loadCatImages('cat1'); // Assuming all cats are the same type
-        const newCat = new Cat(catImages, data.x, data.y, data.name);
+        const newCat = new Cat(catImages, centerX, centerY, data.name); // Set cats to canvas center
         newCat.hue = data.hue;
         newCat.saturation = data.saturation;
         newCat.brightness = data.brightness;
