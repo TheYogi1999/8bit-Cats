@@ -4,15 +4,63 @@ let cats = [];
 let selectedCat = null;
 let textBubbles = [];
 
-// Set canvas size based on screen size and increase maximum size
+// Set canvas size based on screen size and reduce height
 function resizeCanvas() {
     canvas.width = Math.min(window.innerWidth * 0.95, 1200); // 95% of screen width, max 1200px
-    canvas.height = Math.min(window.innerHeight * 0.8, 800); // 80% of screen height, max 800px
+    canvas.height = Math.min(window.innerHeight * 0.5, 500); // 50% of screen height, max 500px
 }
 
 // Resize the canvas on window resize
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
+
+// Music controls
+const music = document.getElementById("backgroundMusic");
+const musicButton = document.getElementById("toggleMusic");
+
+function toggleMusic() {
+    if (music.paused) {
+        music.play();
+        musicButton.innerText = "⏹️"; // Change to stop icon when playing
+    } else {
+        music.pause();
+        musicButton.innerText = "▶️"; // Change to play icon when paused
+    }
+}
+
+// Save cats to localStorage
+function saveCats() {
+    const catsData = cats.map(cat => ({
+        name: cat.name,
+        x: cat.x,
+        y: cat.y,
+        hue: cat.hue,
+        saturation: cat.saturation,
+        brightness: cat.brightness,
+        hunger: cat.hunger,
+        thirst: cat.thirst,
+        affection: cat.affection,
+        imgIndex: cat.imgIndex
+    }));
+    localStorage.setItem('cats', JSON.stringify(catsData));
+}
+
+// Load cats from localStorage
+function loadCats() {
+    const catsData = JSON.parse(localStorage.getItem('cats')) || [];
+    catsData.forEach(data => {
+        const catImages = loadCatImages('cat1'); // Assuming all cats are the same type
+        const newCat = new Cat(catImages, data.x, data.y, data.name);
+        newCat.hue = data.hue;
+        newCat.saturation = data.saturation;
+        newCat.brightness = data.brightness;
+        newCat.hunger = data.hunger;
+        newCat.thirst = data.thirst;
+        newCat.affection = data.affection;
+        newCat.imgIndex = data.imgIndex;
+        cats.push(newCat);
+    });
+}
 
 // Cat class
 class Cat {
@@ -71,6 +119,8 @@ class Cat {
             this.affection = Math.max(this.affection - (Math.random() * 5 + 1), 0); // Random jump between 1 and 5
             this.affectionFrame = 0; // Reset frame counter
         }
+
+        saveCats(); // Save the cat's state after updating needs
     }
 
     // Calculate happiness as the average of hunger, thirst, and affection
@@ -129,9 +179,13 @@ class Cat {
         // Restore the original context (non-flipped)
         ctx.restore();
 
+        // Determine the color for the cat's name based on happiness level
+        const happiness = this.getHappiness();
+        const nameColor = happiness < 10 ? "#808080" : "#FF69B4"; // Gray if happiness < 10, otherwise pink
+
         // Draw the cat's name above the image
         ctx.font = "16px Comic Sans MS";
-        ctx.fillStyle = "#FF69B4"; // Pink color for the cat name
+        ctx.fillStyle = nameColor; // Use dynamic color
         ctx.textAlign = "center";
         ctx.fillText(this.name, this.x + 16, this.y - 10);
 
@@ -215,6 +269,7 @@ function addCat(catType) {
     const catImages = loadCatImages(catType);
     const newCat = new Cat(catImages, Math.random() * canvas.width, Math.random() * canvas.height);
     cats.push(newCat);
+    saveCats(); // Save the cats after adding
 }
 
 // Handle canvas click/touch to select cat
@@ -276,6 +331,7 @@ function patCat() {
         selectedCat.pats++;
         selectedCat.affection = Math.min(selectedCat.affection + 20, 100); // Increase affection
         textBubbles.push(new TextBubble(`Patted!`, selectedCat));
+        saveCats(); // Save the updated state
     }
 }
 
@@ -285,6 +341,7 @@ function feedCat() {
         selectedCat.feedCount++;
         selectedCat.hunger = Math.min(selectedCat.hunger + 30, 100); // Increase hunger
         textBubbles.push(new TextBubble(`Fed!`, selectedCat));
+        saveCats(); // Save the updated state
     }
 }
 
@@ -293,6 +350,7 @@ function giveWater() {
     if (selectedCat) {
         selectedCat.thirst = Math.min(selectedCat.thirst + 30, 100); // Increase thirst
         textBubbles.push(new TextBubble(`Water!`, selectedCat));
+        saveCats(); // Save the updated state
     }
 }
 
@@ -300,6 +358,7 @@ function giveWater() {
 function giveToy() {
     if (selectedCat) {
         textBubbles.push(new TextBubble(`Toy!`, selectedCat));
+        saveCats(); // Save the updated state
     }
 }
 
@@ -308,6 +367,7 @@ function giveSnack() {
     if (selectedCat) {
         selectedCat.hunger = Math.min(selectedCat.hunger + 10, 100); // Increase hunger slightly
         textBubbles.push(new TextBubble(`Snack!`, selectedCat));
+        saveCats(); // Save the updated state
     }
 }
 
@@ -323,6 +383,7 @@ function removeCat() {
         // Hide the menu and clear the selection
         selectedCat = null;
         document.getElementById("cat-menu").style.display = "none";
+        saveCats(); // Save the updated state
     }
 }
 
@@ -333,9 +394,17 @@ function renameCat() {
         if (newName) {
             selectedCat.name = newName;
             document.getElementById("cat-name").innerText = `Cat Name: ${newName}`;
+            saveCats(); // Save the updated state
         }
     }
 }
 
 // Start the game loop
 updateGame();
+
+// Load cats from localStorage on page load
+window.onload = function() {
+    loadCats();
+    music.play();  // Optionally start music automatically when the game loads
+    musicButton.innerText = "⏹️"; // Set to stop icon when music is playing
+}
