@@ -1,4 +1,4 @@
-// Global variables
+// Global variableshttps://github.com/TheYogi1999/8bit-Cats/blob/main/script.js
 let cats = [];
 let catColors = ['#FFB6C1', '#87CEEB', '#98FB98', '#FFD700']; // Cute pastel color palette
 
@@ -16,7 +16,7 @@ function createCat(name, color) {
     catElem.classList.add('cat');
     catElem.dataset.name = name;
     catElem.dataset.color = color;
-    catElem.style.backgroundImage = `url(assets/cat1/cat1_1.png)`;
+    catElem.style.backgroundImage = `url(cat1/cat1_1.png)`;
     catElem.style.filter = `hue-rotate(${Math.random() * 360}deg) saturate(${Math.random() * 1.5})`;
 
     // Random starting position
