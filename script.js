@@ -1,8 +1,12 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 let cats = [];
+let plants = [];  // Array to hold plant objects
 let selectedCat = null;
 let textBubbles = [];
+
+// Disable image smoothing for pixel art
+ctx.imageSmoothingEnabled = false;  // Prevent smoothing when scaling pixel art
 
 // Set canvas size based on screen size and reduce height
 function resizeCanvas() {
@@ -267,12 +271,40 @@ function loadCatImages(catFolder) {
     return catImages;
 }
 
+// Load plant images
+function loadPlantImages() {
+    const plantImages = [];
+    for (let i = 1; i <= 12; i++) {  // Increased number of plants to 12
+        plantImages.push(`./plants/plant${i}.png`);
+    }
+    return plantImages;
+}
+
 // Add a cat to the canvas
 function addCat(catType) {
     const catImages = loadCatImages(catType);
     const newCat = new Cat(catImages, Math.random() * canvas.width, Math.random() * canvas.height);
     cats.push(newCat);
     saveCats(); // Save the cats after adding
+}
+
+// Add plants to the canvas
+function addPlants() {
+    const plantImages = loadPlantImages();
+    const plantCount = 40; // 5 times more plants
+    const scaleFactor = 0.2; // Make the plants 0.2 times smaller (1/5 the size)
+
+    for (let i = 0; i < plantCount; i++) {
+        const randomPlant = new Image();
+        randomPlant.src = plantImages[Math.floor(Math.random() * plantImages.length)];
+        const plantX = Math.random() * (canvas.width - 50); // Random x position
+        const plantY = Math.random() * (canvas.height - 50); // Random y position
+        randomPlant.onload = function () {
+            const width = randomPlant.width * scaleFactor;  // Scale width down to 0.2 times
+            const height = randomPlant.height * scaleFactor;  // Scale height down to 0.2 times
+            plants.push({ img: randomPlant, x: plantX, y: plantY, width, height });
+        };
+    }
 }
 
 // Handle canvas click/touch to select cat
@@ -306,9 +338,14 @@ function updateProgressBars() {
     }
 }
 
-// Update and draw all cats and text bubbles
+// Update and draw all cats, plants, and text bubbles
 function updateGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw all plants with the same pixel size (scaled down by 0.2 times)
+    plants.forEach(plant => {
+        ctx.drawImage(plant.img, plant.x, plant.y, plant.width, plant.height); // Draw each plant
+    });
 
     cats.forEach(cat => {
         const isSelected = cat === selectedCat;  // Check if this is the selected cat
@@ -405,9 +442,10 @@ function renameCat() {
 // Start the game loop
 updateGame();
 
-// Load cats from localStorage on page load
+// Load cats and add plants on page load
 window.onload = function() {
     loadCats();
+    addPlants();  // Add plants to the canvas on load
     music.play();  // Optionally start music automatically when the game loads
     musicButton.innerText = "⏹️"; // Set to stop icon when music is playing
 }
